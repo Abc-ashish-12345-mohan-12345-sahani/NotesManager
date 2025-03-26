@@ -4,6 +4,7 @@ import android.notesmanager.R
 import android.notesmanager.ui.theme.NotesManagerTheme
 import android.notesmanager.ui.theme.dataclass.GetAllNotesItem
 import android.notesmanager.ui.theme.ui.theme.Pink80
+import android.notesmanager.ui.theme.utils.NetworkUtils
 import android.notesmanager.ui.theme.utils.NotesManagerConstants
 import android.notesmanager.ui.theme.viewmodels.MainViewModel
 import android.widget.Toast
@@ -11,26 +12,20 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -66,17 +61,27 @@ fun MainScreen(
 ) {
     val allNotes = viewModel.allNotes.collectAsState(initial = emptyList()).value
     val deleteNotesResult by viewModel.deleteNotes.collectAsState()
+    val isLoading by viewModel.loading.collectAsState()
     val context = LocalContext.current
+    val isInterNetAvailable: Boolean = NetworkUtils.isInternetAvailable(context)
+
+    if (!isInterNetAvailable) {
+        Toast.makeText(context, "No Internet Connection", Toast.LENGTH_SHORT).show()
+        return
+    } else {
+        viewModel.fetchAllNotes()
+    }
+
     LaunchedEffect(deleteNotesResult) {
         deleteNotesResult?.let {
-            Toast.makeText(context, "Notes Deleted Successfully", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Notes Deleted Successfully!", Toast.LENGTH_SHORT).show()
             viewModel.clearDeleteNotesState()
         }
     }
     var searchQuery by remember { mutableStateOf("") }
     Surface(modifier.fillMaxSize()) {
         ConstraintLayout(Modifier.fillMaxSize()) {
-            val (text, searchBar, lazyRow, lazyColumn, addNotes) = createRefs()
+            val (text, searchBar, loader, lazyColumn, addNotes) = createRefs()
             Text(
                 text = "Notes Manager",
                 fontSize = 24.sp,
@@ -93,31 +98,11 @@ fun MainScreen(
                     start.linkTo(parent.start, 10.dp)
                     end.linkTo(parent.end, 10.dp)
                 })
-            LazyRow(Modifier
-                .constrainAs(lazyRow) {
-                    top.linkTo(searchBar.bottom)
-                    start.linkTo(searchBar.start, 10.dp)
-                    end.linkTo(searchBar.end)
-                    width = Dimension.fillToConstraints
-                }
-                .height(50.dp)
-                .fillMaxWidth(),
-                state = rememberLazyListState(),
-                contentPadding = PaddingValues(5.dp),
-                reverseLayout = false,
-                horizontalArrangement = Arrangement.spacedBy(15.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                flingBehavior = ScrollableDefaults.flingBehavior(),
-                userScrollEnabled = true) {
-                items(2) { index ->
-                    LazyRowItems(index)
-                }
-            }
-            LazyColumn(
+            if (!isLoading) LazyColumn(
                 Modifier
                     .padding(horizontal = 10.dp)
                     .constrainAs(lazyColumn) {
-                        top.linkTo(lazyRow.bottom, 10.dp)
+                        top.linkTo(searchBar.bottom, 10.dp)
                         start.linkTo(searchBar.start)
                         end.linkTo(searchBar.end)
                         bottom.linkTo(parent.bottom, 20.dp)
@@ -130,6 +115,13 @@ fun MainScreen(
                 items(allNotes.size) { note ->
                     LazyColumnItems(allNotes[note], viewModel, onEditClick)
                 }
+            } else {
+                CircularProgressIndicator(Modifier.constrainAs(loader) {
+                    top.linkTo(searchBar.bottom)
+                    start.linkTo(searchBar.start)
+                    end.linkTo(searchBar.end)
+                    bottom.linkTo(parent.bottom)
+                }, color = Color.Black, strokeWidth = 2.dp, trackColor = Color.Black)
             }
             FloatingActionButton(onClick = {
                 onFabClick()
@@ -244,35 +236,6 @@ fun SearchBar(
         singleLine = true,
         shape = RoundedCornerShape(10.dp)
     )
-}
-
-
-@Composable
-fun LazyRowItems(index: Int) {
-    Box(
-        Modifier
-            .wrapContentHeight()
-            .wrapContentWidth()
-            .background(
-                Pink80, RoundedCornerShape(10.dp)
-            )
-    ) {
-        if (index == 0) {
-            Text(
-                text = "All (5)",
-                Modifier.padding(start = 10.dp, end = 10.dp, top = 5.dp, bottom = 5.dp),
-                fontSize = 12.sp
-            )
-        } else if (index == 1) {
-            Image(
-                painter = painterResource(R.drawable.baseline_add_24),
-                contentDescription = "",
-                Modifier
-                    .padding(start = 10.dp, end = 10.dp, top = 5.dp, bottom = 5.dp)
-                    .size(20.dp)
-            )
-        }
-    }
 }
 
 

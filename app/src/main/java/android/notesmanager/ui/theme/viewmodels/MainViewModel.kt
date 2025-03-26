@@ -32,9 +32,8 @@ class MainViewModel @Inject constructor(private val authRepository: AuthReposito
     private val _deleteNotesState = MutableStateFlow<Response<ResponseBody>?>(null)
     val deleteNotes: StateFlow<Response<ResponseBody>?> get() = _deleteNotesState
 
-    init {
-        fetchAllNotes()
-    }
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> get() = _loading
 
     fun resetSaveNotesState() {
         _noteCreationState.value = null
@@ -43,10 +42,13 @@ class MainViewModel @Inject constructor(private val authRepository: AuthReposito
 
     fun fetchAllNotes() {
         viewModelScope.launch {
+            _loading.value = true
             try {
                 _allNotes.value = authRepository.fetchAllNotes()
             } catch (e: Exception) {
                 e.printStackTrace()
+            } finally {
+                _loading.value = false
             }
         }
     }
@@ -63,12 +65,15 @@ class MainViewModel @Inject constructor(private val authRepository: AuthReposito
 
     fun createNewNotes(newNotes: PostNewNotes) {
         viewModelScope.launch {
+            _loading.value = true
             try {
                 val result = authRepository.createNewNotes(newNotes)
                 _noteCreationState.value = result
                 fetchAllNotes()
             } catch (e: Exception) {
                 e.printStackTrace()
+            } finally {
+                _loading.value = false
             }
         }
     }
@@ -93,11 +98,14 @@ class MainViewModel @Inject constructor(private val authRepository: AuthReposito
 
     fun updateNotes(id: Int, updatedNotes: PostNewNotes) {
         viewModelScope.launch {
+            _loading.value = true
             try {
                 _noteUpdateState.value = authRepository.updateNotes(id, updatedNotes)
                 fetchAllNotes()
             } catch (e: Exception) {
                 e.printStackTrace()
+            } finally {
+                _loading.value = false
             }
         }
     }

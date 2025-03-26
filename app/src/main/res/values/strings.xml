@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">NotesManager</string>
     <string name="title_activity_login">LoginActivity</string>
+    <string name="no_internet">The server is temporarily unable to service your\nrequest due to maintenance downtime or capacity problems.\nPlease try again later.</string>
 </resources>

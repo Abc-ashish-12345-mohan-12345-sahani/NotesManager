@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -54,6 +55,7 @@ fun CreateNotesScreen(
     val updateResult = viewModel.noteUpdateState.collectAsState().value
     val saveNotes = viewModel.noteCreationState.collectAsState().value
     val id = Prefs.getInt(NotesManagerConstants.ID)
+    val isLoading by viewModel.loading.collectAsState()
 
     LaunchedEffect(id) {
         if (id != -1) {
@@ -100,7 +102,7 @@ fun CreateNotesScreen(
 
     Surface(Modifier.fillMaxSize()) {
         ConstraintLayout(Modifier.fillMaxSize()) {
-            val (arrowBack, headingText, outlinedTextFieldDescription, update, outlinedTextFieldHeading) = createRefs()
+            val (arrowBack, headingText, outlinedTextFieldDescription, update, outlinedTextFieldHeading, loader) = createRefs()
 
             Image(painter = painterResource(R.drawable.baseline_arrow_back_24),
                 contentDescription = "",
@@ -123,7 +125,7 @@ fun CreateNotesScreen(
                     bottom.linkTo(arrowBack.bottom)
                 })
 
-            EditTextField(70,
+            EditTextField(80,
                 if (note.name.isEmpty()) "Write heading here.." else heading,
                 heading,
                 onQueryChanged = {
@@ -150,36 +152,45 @@ fun CreateNotesScreen(
                     end.linkTo(parent.end, 10.dp)
                     width = Dimension.fillToConstraints
                 })
-
-            Button(
-                onClick = {
-                    if (Prefs.contains(NotesManagerConstants.ID)) {
-                        val calendar = Calendar.getInstance()
-                        val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                        val formattedDateTime = formatter.format(calendar.time)
-                        viewModel.updateNotes(
-                            id, PostNewNotes(
-                                name = heading, description = description, date = formattedDateTime
+            if (isLoading) {
+                CircularProgressIndicator(Modifier.constrainAs(loader) {
+                    start.linkTo(outlinedTextFieldDescription.start, 10.dp)
+                    end.linkTo(outlinedTextFieldDescription.end, 10.dp)
+                    bottom.linkTo(parent.bottom, 30.dp)
+                }, color = Color.Black, strokeWidth = 2.dp, trackColor = Color.Black)
+            } else {
+                Button(
+                    onClick = {
+                        if (Prefs.contains(NotesManagerConstants.ID)) {
+                            val calendar = Calendar.getInstance()
+                            val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                            val formattedDateTime = formatter.format(calendar.time)
+                            viewModel.updateNotes(
+                                id, PostNewNotes(
+                                    name = heading,
+                                    description = description,
+                                    date = formattedDateTime
+                                )
                             )
-                        )
-                    } else {
-                        createNewNotes(context, heading, description, viewModel)
-                    }
-                }, enabled = isModified, modifier = Modifier
-                    .height(50.dp)
-                    .constrainAs(update) {
-                        start.linkTo(outlinedTextFieldDescription.start, 10.dp)
-                        end.linkTo(outlinedTextFieldDescription.end, 10.dp)
-                        bottom.linkTo(parent.bottom, 30.dp)
-                        width = Dimension.fillToConstraints
-                    }, colors = ButtonDefaults.buttonColors(Pink80)
-            ) {
-                Text(
-                    text = if (Prefs.contains(NotesManagerConstants.ID)) "Update" else "Save",
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Center,
-                    color = Color.Black
-                )
+                        } else {
+                            createNewNotes(context, heading, description, viewModel)
+                        }
+                    }, enabled = isModified, modifier = Modifier
+                        .height(50.dp)
+                        .constrainAs(update) {
+                            start.linkTo(outlinedTextFieldDescription.start, 10.dp)
+                            end.linkTo(outlinedTextFieldDescription.end, 10.dp)
+                            bottom.linkTo(parent.bottom, 30.dp)
+                            width = Dimension.fillToConstraints
+                        }, colors = ButtonDefaults.buttonColors(Pink80)
+                ) {
+                    Text(
+                        text = if (Prefs.contains(NotesManagerConstants.ID)) "Update" else "Save",
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Center,
+                        color = Color.Black
+                    )
+                }
             }
         }
     }

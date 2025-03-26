@@ -29,7 +29,6 @@ class MainActivity : ComponentActivity() {
                 MainActivityScreen(mainViewModel)
             }
         }
-        mainViewModel.fetchAllNotes()
     }
 }
 
