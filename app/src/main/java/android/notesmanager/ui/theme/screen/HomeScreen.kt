@@ -97,6 +97,16 @@ fun MainScreen(
         }
     }
     var searchQuery by remember { mutableStateOf("") }
+
+    val filterList = if (searchQuery.isEmpty()) {
+        allNotes
+    } else {
+        allNotes.filter {
+            it.name.contains(searchQuery, ignoreCase = true) || it.description.contains(
+                searchQuery, ignoreCase = true
+            )
+        }
+    }
     Surface(modifier.fillMaxSize()) {
         ConstraintLayout(Modifier.fillMaxSize()) {
             val (text, searchBar, loader, lazyColumn, addNotes) = createRefs()
@@ -130,8 +140,12 @@ fun MainScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                items(allNotes.size) { note ->
-                    LazyColumnItems(allNotes[note], viewModel, onEditClick)
+                items(if (filterList.isNotEmpty()) filterList.size else allNotes.size) { note ->
+                    LazyColumnItems(
+                        if (filterList.isNotEmpty()) filterList[note] else allNotes[note],
+                        viewModel,
+                        onEditClick
+                    )
                 }
             } else {
                 CircularProgressIndicator(Modifier.constrainAs(loader) {
@@ -139,7 +153,7 @@ fun MainScreen(
                     start.linkTo(searchBar.start)
                     end.linkTo(searchBar.end)
                     bottom.linkTo(parent.bottom)
-                }, color = Color.Black, strokeWidth = 2.dp, trackColor = Color.Black)
+                }, color = Color.Red, strokeWidth = 3.dp)
             }
             FloatingActionButton(onClick = {
                 onFabClick()
@@ -183,7 +197,7 @@ fun LazyColumnItems(
                     start.linkTo(heading.start)
                 },
                 fontSize = 12.sp,
-                maxLines = 1,
+                maxLines = 1
             )
             Text(
                 text = "Updated at: " + (getAllNotesItem.createdTimeORDate ?: "N/A"),
@@ -202,8 +216,7 @@ fun LazyColumnItems(
                         bottom.linkTo(parent.bottom)
                         end.linkTo(parent.end, 20.dp)
                     }
-                    .size(20.dp)
-            )
+                    .size(20.dp))
         }
     }
     if (showDialog) {
