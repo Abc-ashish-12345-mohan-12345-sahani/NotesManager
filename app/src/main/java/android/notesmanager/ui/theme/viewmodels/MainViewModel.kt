@@ -35,9 +35,20 @@ class MainViewModel @Inject constructor(private val authRepository: AuthReposito
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> get() = _loading
 
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> get() = _errorMessage
+
     fun resetSaveNotesState() {
         _noteCreationState.value = null
         _noteUpdateState.value = null
+    }
+
+    fun clearErrorMessage() {
+        _errorMessage.value = null
+    }
+
+    fun clearDeleteNotesState() {
+        _deleteNotesState.value = null
     }
 
     fun fetchAllNotes() {
@@ -46,7 +57,7 @@ class MainViewModel @Inject constructor(private val authRepository: AuthReposito
             try {
                 _allNotes.value = authRepository.fetchAllNotes()
             } catch (e: Exception) {
-                e.printStackTrace()
+                _errorMessage.value = e.printStackTrace().toString()
             } finally {
                 _loading.value = false
             }
@@ -58,7 +69,7 @@ class MainViewModel @Inject constructor(private val authRepository: AuthReposito
             try {
                 _getSingleNotes.value = authRepository.getNotesById(id)
             } catch (e: Exception) {
-                e.printStackTrace()
+                _errorMessage.value = e.printStackTrace().toString()
             }
         }
     }
@@ -71,7 +82,7 @@ class MainViewModel @Inject constructor(private val authRepository: AuthReposito
                 _noteCreationState.value = result
                 fetchAllNotes()
             } catch (e: Exception) {
-                e.printStackTrace()
+                _errorMessage.value = e.printStackTrace().toString()
             } finally {
                 _loading.value = false
             }
@@ -103,14 +114,10 @@ class MainViewModel @Inject constructor(private val authRepository: AuthReposito
                 _noteUpdateState.value = authRepository.updateNotes(id, updatedNotes)
                 fetchAllNotes()
             } catch (e: Exception) {
-                e.printStackTrace()
+                _errorMessage.value = e.printStackTrace().toString()
             } finally {
                 _loading.value = false
             }
         }
-    }
-
-    fun clearDeleteNotesState() {
-        _deleteNotesState.value = null
     }
 }

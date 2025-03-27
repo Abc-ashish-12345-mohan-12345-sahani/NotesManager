@@ -1,5 +1,19 @@
 <resources>
     <string name="app_name">NotesManager</string>
-    <string name="title_activity_login">LoginActivity</string>
-    <string name="no_internet">The server is temporarily unable to service your\nrequest due to maintenance downtime or capacity problems.\nPlease try again later.</string>
+    <string name="server_unavailable">The server is temporarily unable to service your\nrequest due to maintenance downtime or capacity problems.\nPlease try again later.</string>
+    <string name="note_updated_successfully">Note updated successfully!</string>
+    <string name="failed_to_update_note">Failed to update note!</string>
+    <string name="notes_saved_successfully">Notes saved successfully!</string>
+    <string name="write_heading_here">Write heading1 here..</string>
+    <string name="write_description_here">Write description here..</string>
+    <string name="update">Update</string>
+    <string name="save">Save</string>
+    <string name="please_enter_heading">Please enter heading</string>
+    <string name="please_enter_description">Please enter description</string>
+    <string name="no_internet_connection">No Internet Connection</string>
+    <string name="notes_deleted_successfully">Notes Deleted Successfully!</string>
+    <string name="what_would_you_like_to_do_with_this_note">What would you like to do with this note?</string>
+    <string name="note_options">Note Options</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
 </resources>

@@ -82,19 +82,19 @@ fun CreateNotesScreen(
     }
 
     LaunchedEffect(updateResult) {
-        updateResult?.let { response ->
-            if (response != null) {
-                Toast.makeText(context, "Note updated successfully!", Toast.LENGTH_SHORT).show()
-                navController.navigate(NotesManagerConstants.MAIN_SCREEN)
-            } else {
-                Toast.makeText(context, "Failed to update note!", Toast.LENGTH_SHORT).show()
-            }
+        updateResult?.let {
+            Toast.makeText(
+                context, context.getString(R.string.note_updated_successfully), Toast.LENGTH_SHORT
+            ).show()
+            navController.navigate(NotesManagerConstants.MAIN_SCREEN)
         }
     }
 
     LaunchedEffect(saveNotes) {
         saveNotes?.let {
-            Toast.makeText(context, "Notes saved successfully!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                context, context.getString(R.string.notes_saved_successfully), Toast.LENGTH_SHORT
+            ).show()
             viewModel.resetSaveNotesState()
             navController.navigate(NotesManagerConstants.MAIN_SCREEN)
         }
@@ -126,7 +126,7 @@ fun CreateNotesScreen(
                 })
 
             EditTextField(80,
-                if (note.name.isEmpty()) "Write heading here.." else heading,
+                if (note.name.isEmpty()) context.getString(R.string.write_heading_here) else heading,
                 heading,
                 onQueryChanged = {
                     heading = it
@@ -140,7 +140,7 @@ fun CreateNotesScreen(
                 })
 
             EditTextField(250,
-                if (note.description.isEmpty()) "Write description here.." else description,
+                if (note.description.isEmpty()) context.getString(R.string.write_description_here) else description,
                 description,
                 onQueryChanged = {
                     description = it
@@ -200,10 +200,14 @@ fun createNewNotes(
     context: Context, heading: String, description: String, viewModel: MainViewModel
 ) {
     if (heading.isEmpty() || heading.isBlank()) {
-        Toast.makeText(context, "Please enter heading", Toast.LENGTH_SHORT).show()
+        Toast.makeText(
+            context, context.getString(R.string.please_enter_heading), Toast.LENGTH_SHORT
+        ).show()
         return
     } else if (description.isEmpty() || description.isBlank()) {
-        Toast.makeText(context, "Please enter description", Toast.LENGTH_SHORT).show()
+        Toast.makeText(
+            context, context.getString(R.string.please_enter_description), Toast.LENGTH_SHORT
+        ).show()
         return
     } else {
         val calendar = Calendar.getInstance()

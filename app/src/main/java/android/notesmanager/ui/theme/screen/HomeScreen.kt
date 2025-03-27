@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -45,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -64,17 +66,33 @@ fun MainScreen(
     val isLoading by viewModel.loading.collectAsState()
     val context = LocalContext.current
     val isInterNetAvailable: Boolean = NetworkUtils.isInternetAvailable(context)
+    val errorMessage by viewModel.errorMessage.collectAsState()
 
     if (!isInterNetAvailable) {
-        Toast.makeText(context, "No Internet Connection", Toast.LENGTH_SHORT).show()
+        Toast.makeText(
+            context, context.getString(R.string.no_internet_connection), Toast.LENGTH_SHORT
+        ).show()
         return
     } else {
         viewModel.fetchAllNotes()
     }
 
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let {
+            Toast.makeText(
+                context,
+                if (it.contains("400")) context.getString(R.string.server_unavailable) else it,
+                Toast.LENGTH_SHORT
+            ).show()
+            viewModel.clearErrorMessage()
+        }
+    }
+
     LaunchedEffect(deleteNotesResult) {
         deleteNotesResult?.let {
-            Toast.makeText(context, "Notes Deleted Successfully!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                context, context.getString(R.string.notes_deleted_successfully), Toast.LENGTH_SHORT
+            ).show()
             viewModel.clearDeleteNotesState()
         }
     }
@@ -83,7 +101,7 @@ fun MainScreen(
         ConstraintLayout(Modifier.fillMaxSize()) {
             val (text, searchBar, loader, lazyColumn, addNotes) = createRefs()
             Text(
-                text = "Notes Manager",
+                text = stringResource(R.string.app_name),
                 fontSize = 24.sp,
                 modifier = Modifier.constrainAs(text) {
                     top.linkTo(parent.top, 40.dp)
@@ -148,12 +166,12 @@ fun LazyColumnItems(
             .fillMaxWidth()
             .height(90.dp)
             .background(
-                Color.Gray.copy(0.2f), RoundedCornerShape(10.dp)
+                Color.Gray.copy(0.1f), RoundedCornerShape(10.dp)
             )
             .combinedClickable(onClick = {}, onLongClick = { showDialog = true })
     ) {
         ConstraintLayout(Modifier.fillMaxSize()) {
-            val (heading, desc, createdAt) = createRefs()
+            val (heading, desc, createdAt, arrow) = createRefs()
             Text(text = getAllNotesItem.name, Modifier.constrainAs(heading) {
                 top.linkTo(parent.top, 10.dp)
                 start.linkTo(parent.start, 10.dp)
@@ -168,7 +186,7 @@ fun LazyColumnItems(
                 maxLines = 1,
             )
             Text(
-                text = "Updated at: " + if (getAllNotesItem.createdTimeORDate != null) getAllNotesItem.createdTimeORDate else "N/A",
+                text = "Updated at: " + (getAllNotesItem.createdTimeORDate ?: "N/A"),
                 Modifier.constrainAs(createdAt) {
                     top.linkTo(desc.bottom)
                     bottom.linkTo(parent.bottom)
@@ -176,19 +194,29 @@ fun LazyColumnItems(
                 },
                 fontSize = 10.sp
             )
+            Image(painter = painterResource(R.drawable.baseline_arrow_circle_right_24),
+                contentDescription = "",
+                Modifier
+                    .constrainAs(arrow) {
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                        end.linkTo(parent.end, 20.dp)
+                    }
+                    .size(20.dp)
+            )
         }
     }
     if (showDialog) {
         AlertDialog(onDismissRequest = { showDialog = false },
-            title = { Text("Note Options") },
-            text = { Text("What would you like to do with this note?") },
+            title = { Text(stringResource(R.string.note_options)) },
+            text = { Text(stringResource(R.string.what_would_you_like_to_do_with_this_note)) },
             confirmButton = {
                 TextButton(onClick = {
                     showDialog = false
                     onEditClick()
                     Prefs.putInt(NotesManagerConstants.ID, getAllNotesItem.id)
                 }) {
-                    Text("Edit")
+                    Text(stringResource(R.string.edit))
                 }
             },
             dismissButton = {
@@ -196,7 +224,7 @@ fun LazyColumnItems(
                     showDialog = false
                     viewModel.deleteNotes(getAllNotesItem.id)
                 }) {
-                    Text("Delete")
+                    Text(stringResource(R.string.delete))
                 }
             })
     }
