@@ -11,6 +11,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -34,21 +38,32 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainActivityScreen(viewModel: MainViewModel) {
-    val context = LocalContext.current
-    val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = NotesManagerConstants.MAIN_SCREEN) {
-        composable(NotesManagerConstants.MAIN_SCREEN) {
-            MainScreen(viewModel, onFabClick = {
-                Prefs.remove(NotesManagerConstants.ID)
-                navController.navigate(NotesManagerConstants.CREATE_NOTES_SCREEN)
-            }, onEditClick = {
-                navController.navigate(NotesManagerConstants.CREATE_NOTES_SCREEN)
-            })
-        }
-        composable(NotesManagerConstants.CREATE_NOTES_SCREEN) {
-            CreateNotesScreen(
-                context, viewModel, navController
-            )
+    var isDarkTheme by remember { mutableStateOf(false) }
+    NotesManagerTheme(darkTheme = isDarkTheme) {
+        val context = LocalContext.current
+        val navController = rememberNavController()
+        NavHost(
+            navController = navController,
+            startDestination = NotesManagerConstants.MAIN_SCREEN
+        ) {
+            composable(NotesManagerConstants.MAIN_SCREEN) {
+                MainScreen(
+                    viewModel,
+                    isDarkTheme = isDarkTheme,
+                    onToggleDarkMode = { isDarkTheme = !isDarkTheme },
+                    onFabClick = {
+                        Prefs.remove(NotesManagerConstants.ID)
+                        navController.navigate(NotesManagerConstants.CREATE_NOTES_SCREEN)
+                    },
+                    onEditClick = {
+                        navController.navigate(NotesManagerConstants.CREATE_NOTES_SCREEN)
+                    })
+            }
+            composable(NotesManagerConstants.CREATE_NOTES_SCREEN) {
+                CreateNotesScreen(
+                    context, viewModel, navController
+                )
+            }
         }
     }
 }

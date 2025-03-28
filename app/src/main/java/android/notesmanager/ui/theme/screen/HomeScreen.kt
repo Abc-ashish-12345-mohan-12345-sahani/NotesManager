@@ -35,6 +35,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -43,10 +44,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -62,6 +63,8 @@ import com.pixplicity.easyprefs.library.Prefs
 @Composable
 fun MainScreen(
     viewModel: MainViewModel,
+    isDarkTheme: Boolean,
+    onToggleDarkMode: () -> Unit,
     onFabClick: () -> Unit,
     onEditClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -70,11 +73,11 @@ fun MainScreen(
     val deleteNotesResult by viewModel.deleteNotes.collectAsState()
     val isLoading by viewModel.loading.collectAsState()
     val context = LocalContext.current
-    val isInterNetAvailable: Boolean = NetworkUtils.isInternetAvailable(context)
+    val isInternetAvailable: Boolean = NetworkUtils.isInternetAvailable(context)
     val errorMessage by viewModel.errorMessage.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
+    val snackBarHostState = remember { SnackbarHostState() }
 
-    if (!isInterNetAvailable) {
+    if (!isInternetAvailable) {
         Toast.makeText(
             context, context.getString(R.string.no_internet_connection), Toast.LENGTH_SHORT
         ).show()
@@ -83,7 +86,7 @@ fun MainScreen(
 
     LaunchedEffect(errorMessage) {
         errorMessage?.let { message ->
-            snackbarHostState.showSnackbar(
+            snackBarHostState.showSnackbar(
                 if (message.contains("404")) context.getString(
                     R.string.server_unavailable
                 ) else context.getString(R.string.some_error_occurred)
@@ -100,6 +103,7 @@ fun MainScreen(
             viewModel.clearDeleteNotesState()
         }
     }
+
     var searchQuery by remember { mutableStateOf("") }
 
     val filterList = if (searchQuery.isEmpty()) {
@@ -111,15 +115,15 @@ fun MainScreen(
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { SnackbarHost(snackBarHostState) },
     ) { paddingValues ->
         Surface(
             modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValues),
         ) {
             ConstraintLayout(Modifier.fillMaxSize()) {
-                val (text, searchBar, loader, lazyColumn, addNotes) = createRefs()
+                val (text, searchBar, loader, lazyColumn, addNotes, toggleButton) = createRefs()
                 Text(
                     text = stringResource(R.string.app_name),
                     fontSize = 24.sp,
@@ -128,6 +132,15 @@ fun MainScreen(
                         start.linkTo(parent.start, 15.dp)
                     },
                 )
+                Switch(checked = isDarkTheme,
+                    onCheckedChange = { onToggleDarkMode() },
+                    modifier = Modifier
+                        .constrainAs(toggleButton) {
+                            top.linkTo(text.top)
+                            bottom.linkTo(text.bottom)
+                            end.linkTo(parent.end, 15.dp)
+                        }
+                        .scale(0.6f))
                 SearchBar(query = searchQuery,
                     onQueryChanged = { searchQuery = it },
                     onClear = { searchQuery = "" },
@@ -179,6 +192,7 @@ fun MainScreen(
             }
         }
     }
+
 }
 
 
@@ -212,7 +226,7 @@ fun LazyColumnItems(
                 }, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = "Updated at: " + (getAllNotesItem.createdTimeORDate ?: "N/A"),
+                text = "Updated at: " + getAllNotesItem.createdTimeORDate,
                 Modifier.constrainAs(createdAt) {
                     top.linkTo(desc.bottom)
                     bottom.linkTo(parent.bottom)
