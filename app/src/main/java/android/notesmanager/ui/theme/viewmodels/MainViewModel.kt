@@ -57,7 +57,7 @@ class MainViewModel @Inject constructor(private val authRepository: AuthReposito
             try {
                 _allNotes.value = authRepository.fetchAllNotes()
             } catch (e: Exception) {
-                _errorMessage.value = e.printStackTrace().toString()
+                _errorMessage.value = e.localizedMessage
             } finally {
                 _loading.value = false
             }
@@ -69,7 +69,7 @@ class MainViewModel @Inject constructor(private val authRepository: AuthReposito
             try {
                 _getSingleNotes.value = authRepository.getNotesById(id)
             } catch (e: Exception) {
-                _errorMessage.value = e.printStackTrace().toString()
+                _errorMessage.value = e.localizedMessage
             }
         }
     }
@@ -82,7 +82,7 @@ class MainViewModel @Inject constructor(private val authRepository: AuthReposito
                 _noteCreationState.value = result
                 fetchAllNotes()
             } catch (e: Exception) {
-                _errorMessage.value = e.printStackTrace().toString()
+                _errorMessage.value = e.localizedMessage
             } finally {
                 _loading.value = false
             }
@@ -94,7 +94,7 @@ class MainViewModel @Inject constructor(private val authRepository: AuthReposito
             try {
                 val response = authRepository.deleteNotes(id)
                 if (response.isSuccessful) {
-                    _deleteNotesState.value = authRepository.deleteNotes(id)
+                    _deleteNotesState.value = response
                     fetchAllNotes()
                 } else {
                     _deleteNotesState.value = Response.error(response.code(), response.errorBody())
@@ -114,7 +114,7 @@ class MainViewModel @Inject constructor(private val authRepository: AuthReposito
                 _noteUpdateState.value = authRepository.updateNotes(id, updatedNotes)
                 fetchAllNotes()
             } catch (e: Exception) {
-                _errorMessage.value = e.printStackTrace().toString()
+                _errorMessage.value = e.localizedMessage
             } finally {
                 _loading.value = false
             }

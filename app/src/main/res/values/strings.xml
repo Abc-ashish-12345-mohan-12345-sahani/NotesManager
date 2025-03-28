@@ -4,7 +4,7 @@
     <string name="note_updated_successfully">Note updated successfully!</string>
     <string name="failed_to_update_note">Failed to update note!</string>
     <string name="notes_saved_successfully">Notes saved successfully!</string>
-    <string name="write_heading_here">Write heading1 here..</string>
+    <string name="write_heading_here">Write heading here..</string>
     <string name="write_description_here">Write description here..</string>
     <string name="update">Update</string>
     <string name="save">Save</string>
@@ -16,4 +16,5 @@
     <string name="note_options">Note Options</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
+    <string name="some_error_occurred">Some Error Occurred Please Try Again Later!</string>
 </resources>

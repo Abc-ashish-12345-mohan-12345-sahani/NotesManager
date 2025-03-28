@@ -86,6 +86,7 @@ fun CreateNotesScreen(
             Toast.makeText(
                 context, context.getString(R.string.note_updated_successfully), Toast.LENGTH_SHORT
             ).show()
+            viewModel.resetSaveNotesState()
             navController.navigate(NotesManagerConstants.MAIN_SCREEN)
         }
     }
@@ -157,7 +158,7 @@ fun CreateNotesScreen(
                     start.linkTo(outlinedTextFieldDescription.start, 10.dp)
                     end.linkTo(outlinedTextFieldDescription.end, 10.dp)
                     bottom.linkTo(parent.bottom, 30.dp)
-                }, color = Color.Black, strokeWidth = 2.dp, trackColor = Color.Black)
+                }, color = Color.Red, strokeWidth = 3.dp)
             } else {
                 Button(
                     onClick = {
