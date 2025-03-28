@@ -51,6 +51,10 @@ class MainViewModel @Inject constructor(private val authRepository: AuthReposito
         _deleteNotesState.value = null
     }
 
+    init {
+        fetchAllNotes()
+    }
+
     fun fetchAllNotes() {
         viewModelScope.launch {
             _loading.value = true

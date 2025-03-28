@@ -73,21 +73,18 @@ fun MainScreen(
     val isInterNetAvailable: Boolean = NetworkUtils.isInternetAvailable(context)
     val errorMessage by viewModel.errorMessage.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope()
 
     if (!isInterNetAvailable) {
         Toast.makeText(
             context, context.getString(R.string.no_internet_connection), Toast.LENGTH_SHORT
         ).show()
         return
-    } else {
-        viewModel.fetchAllNotes()
     }
 
     LaunchedEffect(errorMessage) {
         errorMessage?.let { message ->
             snackbarHostState.showSnackbar(
-                if (message.contains("HTTP 500 Internal Server Error")) context.getString(
+                if (message.contains("404")) context.getString(
                     R.string.server_unavailable
                 ) else context.getString(R.string.some_error_occurred)
             )
