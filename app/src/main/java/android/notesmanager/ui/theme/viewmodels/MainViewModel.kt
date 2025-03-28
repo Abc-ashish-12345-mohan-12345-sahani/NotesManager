@@ -55,7 +55,7 @@ class MainViewModel @Inject constructor(private val authRepository: AuthReposito
         fetchAllNotes()
     }
 
-    fun fetchAllNotes() {
+    private fun fetchAllNotes() {
         viewModelScope.launch {
             _loading.value = true
             try {
